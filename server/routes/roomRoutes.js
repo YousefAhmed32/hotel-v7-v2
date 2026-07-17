@@ -1,0 +1,17 @@
+import { Router } from 'express';
+import * as roomController from '../controllers/roomController.js';
+import { authenticate, authorize } from '../middlewares/authenticate.js';
+import { resolveHotel, enforceTenantAccess } from '../middlewares/tenantScope.js';
+const router = Router({ mergeParams: true });
+router.use(resolveHotel);
+router.get('/', roomController.getRooms);
+router.get('/available', roomController.getAvailableRooms);
+router.get('/:roomId', roomController.getRoomById);
+router.use(authenticate, enforceTenantAccess);
+router.post('/', authorize('owner','manager','superadmin'), roomController.createRoom);
+router.patch('/:roomId', authorize('owner','manager','superadmin'), roomController.updateRoom);
+router.delete('/:roomId', authorize('owner','manager','superadmin'), roomController.deleteRoom);
+router.post('/:roomId/pricing-rules', authorize('owner','manager','superadmin'), roomController.addPricingRule);
+router.delete('/:roomId/pricing-rules/:ruleId', authorize('owner','manager','superadmin'), roomController.removePricingRule);
+router.post('/:roomId/block-dates', authorize('owner','manager','receptionist','superadmin'), roomController.blockDates);
+export default router;

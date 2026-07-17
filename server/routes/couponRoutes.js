@@ -1,0 +1,16 @@
+import { Router } from 'express';
+import * as couponController from '../controllers/couponController.js';
+import { authenticate, requirePermission } from '../middlewares/authenticate.js';
+import { resolveHotel, enforceTenantAccess } from '../middlewares/tenantScope.js';
+import { PERMISSIONS } from '../constants/permissions.js';
+const router = Router({ mergeParams: true });
+router.use(resolveHotel);
+router.post('/apply', authenticate, couponController.applyCoupon);
+router.use(authenticate, enforceTenantAccess);
+router.get('/', requirePermission(PERMISSIONS.COUPONS_VIEW), couponController.getHotelCoupons);
+router.get('/:couponId', requirePermission(PERMISSIONS.COUPONS_VIEW), couponController.getCouponById);
+router.post('/', requirePermission(PERMISSIONS.COUPONS_CREATE), couponController.createCoupon);
+router.patch('/:couponId', requirePermission(PERMISSIONS.COUPONS_UPDATE), couponController.updateCoupon);
+router.patch('/:couponId/toggle', requirePermission(PERMISSIONS.COUPONS_UPDATE), couponController.toggleCouponStatus);
+router.delete('/:couponId', requirePermission(PERMISSIONS.COUPONS_DELETE), couponController.deleteCoupon);
+export default router;

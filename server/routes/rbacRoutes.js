@@ -1,0 +1,18 @@
+import { Router } from 'express';
+import * as rbacController from '../controllers/rbacController.js';
+import { authenticate, authorize, requirePermission } from '../middlewares/authenticate.js';
+import { resolveHotel, enforceTenantAccess } from '../middlewares/tenantScope.js';
+import { PERMISSIONS } from '../constants/permissions.js';
+const router = Router({ mergeParams: true });
+router.use(authenticate, resolveHotel, enforceTenantAccess);
+router.get('/permissions', rbacController.getAllPermissions);
+router.get('/search', rbacController.searchUsers);
+router.post('/assign', requirePermission(PERMISSIONS.STAFF_INVITE), rbacController.assignExistingUser);
+router.get('/', requirePermission(PERMISSIONS.STAFF_VIEW), rbacController.getHotelStaff);
+router.get('/:staffId', requirePermission(PERMISSIONS.STAFF_VIEW), rbacController.getStaffMember);
+router.post('/invite', requirePermission(PERMISSIONS.STAFF_INVITE), rbacController.inviteStaff);
+router.patch('/:staffId/role', authorize('owner','superadmin'), rbacController.updateStaffRole);
+router.patch('/:staffId/permissions', requirePermission(PERMISSIONS.STAFF_UPDATE), rbacController.updateStaffPermissions);
+router.patch('/:staffId/toggle', requirePermission(PERMISSIONS.STAFF_UPDATE), rbacController.toggleStaffStatus);
+router.delete('/:staffId', requirePermission(PERMISSIONS.STAFF_REMOVE), rbacController.removeStaff);
+export default router;

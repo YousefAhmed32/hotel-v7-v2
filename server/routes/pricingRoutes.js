@@ -1,0 +1,14 @@
+import { Router } from 'express';
+import * as pricingController from '../controllers/pricingController.js';
+import { authenticate, requirePermission } from '../middlewares/authenticate.js';
+import { resolveHotel, enforceTenantAccess } from '../middlewares/tenantScope.js';
+import { PERMISSIONS } from '../constants/permissions.js';
+const router = Router({ mergeParams: true });
+router.use(authenticate, resolveHotel, enforceTenantAccess);
+router.get('/suggest', requirePermission(PERMISSIONS.PRICING_VIEW), pricingController.getAllSuggestions);
+router.get('/suggest/:roomId', requirePermission(PERMISSIONS.PRICING_VIEW), pricingController.getSuggestion);
+router.get('/analytics', requirePermission(PERMISSIONS.PRICING_VIEW), pricingController.getPricingAnalytics);
+router.get('/history/:roomId', requirePermission(PERMISSIONS.PRICING_VIEW), pricingController.getPriceHistory);
+router.post('/apply/:roomId', requirePermission(PERMISSIONS.PRICING_UPDATE), pricingController.applyPrice);
+router.post('/ignore/:roomId', requirePermission(PERMISSIONS.PRICING_UPDATE), pricingController.ignoreSuggestion);
+export default router;
